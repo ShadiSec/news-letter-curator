@@ -1,3 +1,4 @@
+![workflow SS](./workflowSS)
 # AI Newsletter Curator (n8n Workflow)
 
 A simple n8n workflow that uses an LLM to monitor RSS feeds for tech news, scores articles based on relevance, and sends a daily summary to a Discord server.
@@ -51,6 +52,7 @@ To solve this, I built an automation in n8n that acts as a personal news curator
 ## Example Output (Discord Embed)
 
 When a relevant article is found, a message like this will appear in your Discord channel:
+![discord_embed](./discord_embed.jpg)
 
 ## About This Project
 
