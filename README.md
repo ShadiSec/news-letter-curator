@@ -30,8 +30,7 @@ To solve this, I built an automation in n8n that acts as a personal news curator
 
 ## Setup & Installation
 
-1. **Get the Workflow**:
-[Add link to your workflow JSON file here]
+1. [Get the Workflow](./workflow.json)
 2. **Import to n8n**:
     - Open your n8n canvas.
     - Go to `File` > `Import from File...`
