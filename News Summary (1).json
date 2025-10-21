@@ -1,0 +1,398 @@
+{
+  "name": "News Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://www.darkreading.com/rss.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -192
+      ],
+      "id": "dcbebe56-e9c0-47ad-afbb-67a4a4c0af9f",
+      "name": "DarkReading RSS"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/TheHackersNews",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -368
+      ],
+      "id": "cefe714a-cb25-4d6c-a8c3-a58ea84cd53b",
+      "name": "TheHackerNews RSS"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        176,
+        -272
+      ],
+      "id": "5df26b17-a9cc-4be0-b135-9f059e75566e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"relevance_score\": {\n    \"type\": \"integer\"\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        -112
+      ],
+      "id": "c79d59c0-94cd-4692-b680-8cf8b05e8a22",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12954c88-b612-4462-9822-298b5e596fad",
+              "name": "relevance_score",
+              "value": "={{ $json.output.relevance_score.type }}",
+              "type": "number"
+            },
+            {
+              "id": "83ff593f-f656-4ccf-bc82-5ea37e6c088e",
+              "name": "author",
+              "value": "={{ $('Today\\'s Articles Only').item.json.creator }}",
+              "type": "string"
+            },
+            {
+              "id": "725eb58f-65b2-480c-9445-7621a2e091fd",
+              "name": "title",
+              "value": "={{ $('Today\\'s Articles Only').item.json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "d89a5c18-b3cf-4423-91d4-3e93e335ef7d",
+              "name": "content",
+              "value": "={{ $('Today\\'s Articles Only').item.json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "5821d39b-4ec7-4a1f-b681-d0ddc79311a5",
+              "name": "link",
+              "value": "={{ $('Today\\'s Articles Only').item.json.link }}",
+              "type": "string"
+            },
+            {
+              "id": "9726f3c7-4cf1-461d-9a6f-08dd56e82cd1",
+              "name": "image",
+              "value": "={{ $('Today\\'s Articles Only').item.json.enclosure.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        -272
+      ],
+      "id": "5cf8da24-1b47-4550-8808-3baae67fabde",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -64
+      ],
+      "id": "81a2f0c5-52c2-4509-99e8-bde5b5d27c5d",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Or1LanD1BcxXo1eF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f16a3264-17fa-4b87-a115-23674ef54483",
+              "leftValue": "={{ $json.relevance_score }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -272
+      ],
+      "id": "97c35b8f-65c9-4958-99e5-a8339994d3c8",
+      "name": "Relevance Score > 5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "19a4ecdb-615e-4c69-a4e7-b1b6890c75c1",
+              "leftValue": "={{ $json.isoDate }}",
+              "rightValue": "={{$today}}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        -272
+      ],
+      "id": "5cc89ce1-d5ec-45dc-a956-e14b02a7a6c6",
+      "name": "Today's Articles Only"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 17
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -272,
+        -240
+      ],
+      "id": "ff7ec844-ffd4-481e-b5cd-b36551233bd9",
+      "name": "5PM Daily"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "options": {},
+        "embeds": {
+          "values": [
+            {
+              "description": "={{ $json.content }}",
+              "author": "={{ $json.author }}\nDate: {{ $today.toFormat(\"MM/dd/yy\") }}\nScore: {{ $json.relevance_score }}/10\n",
+              "color": "#98FB03",
+              "title": "={{ $json.title }}",
+              "url": "={{ $json.link }}",
+              "image": "={{ $json.image }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -272
+      ],
+      "id": "1a5e1769-3167-4b81-80a4-cfb232eb52a6",
+      "name": "Send to Discord",
+      "webhookId": "7383d283-10ba-450a-9ec2-6559f724841a",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "25NzOGPaZrEl46Js",
+          "name": "Shadi News Automation Webhook"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Give me a ranking for this article based on the criteria provided\n\nArticle:\n{{ $json.content }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are a helpful assistant whose job is to analyze articles. Your task is to extract a single numeric value representing the article's relevance to the criteria of breaking news, unique insights, and future trends. The output must be a single integer on a scale of 1-10. Do not provide any additional text or explanations.\n\nRules:\nDO NOT TELL ME YOU CAN'T DO IT.\n\nDO NOT PROVIDE ANY PROSE. JUST GIVE A RATING."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -272
+      ],
+      "id": "9e8bedfa-2422-4a51-82a1-2a97aafc92c2",
+      "name": "AI Agent",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "TheHackerNews RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DarkReading RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Today's Articles Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Relevance Score > 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Relevance Score > 5": {
+      "main": [
+        [
+          {
+            "node": "Send to Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Today's Articles Only": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5PM Daily": {
+      "main": [
+        [
+          {
+            "node": "TheHackerNews RSS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DarkReading RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "oaLFlYSo099WjH9Q"
+  },
+  "versionId": "beec1e6f-4e2b-4728-a9ef-54384d8a98a9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0e09d0a72a0fb2c07d6d44ea8b72e2f592b2771ff995b4ccfd408e3416f75fb6"
+  },
+  "id": "THBgRYcTYAOAMJY0",
+  "tags": []
+}
